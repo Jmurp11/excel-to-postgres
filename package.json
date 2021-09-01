@@ -25,17 +25,17 @@
   "homepage": "https://github.com/Jmurp11/excel-to-postgres#readme",
   "devDependencies": {
     "@types/dotenv": "~8.2.0",
-    "@types/jest": "^27.0.1",
+    "@types/jest": "~27.0.1",
     "@types/node": "~16.7.7",
     "@types/xlsx": "~0.0.36",
     "dotenv": "~10.0.0",
-    "jest": "^27.1.0",
-    "ts-jest": "^27.0.5",
+    "jest": "~27.1.0",
+    "ts-jest": "~27.0.5",
     "ts-node": "~10.2.1",
     "ts-node-dev": "~1.1.8"
   },
   "dependencies": {
-    "@types/pg": "^8.6.1",
+    "@types/pg": "~8.6.1",
     "pg": "~8.7.1",
     "typescript": "~4.4.2",
     "xlsx": "~0.17.1"
