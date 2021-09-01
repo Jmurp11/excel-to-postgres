@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { Pool } from 'pg';
 import { getFields, Fields, Column, getColumns, formatColumns } from './etl-processes';
 import { readExcel } from './excel';
@@ -6,19 +5,32 @@ import { readExcel } from './excel';
 export interface Connection {
     user: string;
     host: string;
-    database?: string;
+    database: string;
     password: string;
-    port: string;
+    port: number;
 }
 
 export interface Options {
     createDatabase?: boolean;
-    databaseName?: string;
     createTablesUsingSheetNames?: boolean;
     generateId?: boolean;
 }
 
-function insert<T>(table: string, data: T[]): string {
+export function createDatabase(dbName: string): string {
+    return `CREATE DATABASE ${dbName};`;
+}
+
+export function createTable<T>(tableName: string, data: T): string {
+    const fields: Fields<T> = getFields(data);
+    const columns: Column[] = getColumns(fields);
+    const formattedColumns: string[] = formatColumns(columns);
+
+    return `CREATE TABLE ${tableName.replace(/\s/g, '')} (
+        ${formattedColumns}
+    );`;
+}
+
+export function insert<T>(table: string, data: T[]): string {
     const columns = getFields(data[0]).names;
     let insertQuery = `INSERT INTO ${table.replace(/\s/g, '')}(${columns}) VALUES `;
 
@@ -47,68 +59,41 @@ function insert<T>(table: string, data: T[]): string {
     return insertQuery;
 }
 
-function createDatabase(dbName: string): string {
-    return `CREATE DATABASE ${dbName};`;
-}
-
-function createTable<T>(tableName: string, data: T): string {
-    const fields: Fields<T> = getFields(data);
-
-    const columns: Column[] = getColumns(fields);
-
-    const formattedColumns: string[] = formatColumns(columns);
-
-    return `CREATE TABLE "_${tableName.replace(/\s/g, '')}" (
-        ${formattedColumns}
-    );`;
-}
-
-export async function populateDatabase(connectionInfo: Connection, filePath: string, options?: Options): Promise<void> {
-
+async function executeQuery(connectionInfo: Connection, query: string) {
     const pool = new Pool({ ...connectionInfo });
 
-    const sheets = readExcel(filePath);
-
-    let insertQuery = '';
-    let tableQuery = '';
-
-    if (options && options.createDatabase) {
-        await executeQuery(pool, createDatabase(options.databaseName));
-    }
-
-    if (options && options.createTablesUsingSheetNames) {
-        sheets.forEach(async (sheet) => {
-            tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0]));
-            insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
-        });
-
-        writeToLog('/Users/jim.murphy/Desktop/table.sql', tableQuery);
-        writeToLog('/Users/jim.murphy/Desktop/insert.sql', insertQuery);
-        await executeQuery(pool, tableQuery);
-        await executeQuery(pool, insertQuery);
-    }
-
-    if (!options.createTablesUsingSheetNames) {
-        sheets.forEach(async (sheet) => {
-            insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
-        });
-        writeToLog('/Users/jim.murphy/Desktop/insert.sql', insertQuery);
-        await executeQuery(pool, insertQuery);
-    }
-}
-
-function writeToLog(file: string, text: string) {
-    fs.appendFile(file, text, (err) => {
-        if (err) {
-            return console.log(err);
-        }
-    });
-}
-
-async function executeQuery(pool: Pool, query: string) {
     try {
         await pool.query(query);
     } catch (err) {
         return console.log(err);
     } finally { }
+
+    await pool.end();
+}
+
+export async function excelToPostgresDb(connectionInfo: Connection, filePath: string, options?: Options): Promise<void> {
+    const sheets = readExcel(filePath);
+
+    let insertQuery = '';
+    let tableQuery = '';
+
+    sheets.forEach(async (sheet) => {
+        tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0]));
+        insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
+    });
+
+    if (options && options.createDatabase) {
+        await executeQuery(connectionInfo, createDatabase(connectionInfo.database));
+        await executeQuery(connectionInfo, tableQuery);
+        await executeQuery(connectionInfo, insertQuery);
+    }
+
+    if (options && !options.createDatabase && options.createTablesUsingSheetNames) {
+        await executeQuery(connectionInfo, tableQuery);
+        // await executeQuery(connectionInfo, insertQuery);
+    }
+
+    if (!options.createDatabase && !options.createTablesUsingSheetNames) {
+        await executeQuery(connectionInfo, insertQuery);
+    }
 }

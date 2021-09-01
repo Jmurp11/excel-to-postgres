@@ -1,15 +1,15 @@
 import 'dotenv/config';
-import { populateDatabase } from './sql';
+import { excelToPostgresDb } from './sql';
 
-populateDatabase({
+excelToPostgresDb({
     user: process.env.USERNAME,
     host: process.env.HOST,
-    // database: 'test',
+    database: 'test',
     password: process.env.PASSWORD,
-    port: process.env.PORT
+    port: parseInt(process.env.PORT, 10)
 }, '/Users/jim.murphy/Desktop/2021_Projections.xlsx',
     {
-        createDatabase: true,
-        databaseName: 'test',
-        createTablesUsingSheetNames: true
+        createDatabase: false,
+        createTablesUsingSheetNames: false,
+        generateId: false
     });
