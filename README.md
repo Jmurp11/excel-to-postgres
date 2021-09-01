@@ -3,7 +3,11 @@ Quickly export an Excel Workbook to a Postgres DB
 
 # Installation
 
+Using NPM:
+
 `npm i excel-to-postgres`
+
+Using Yarn:
 
 `yarn add excel-to-postgres`
 
