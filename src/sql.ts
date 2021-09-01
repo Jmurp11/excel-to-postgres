@@ -12,8 +12,7 @@ export interface Connection {
 
 export interface Options {
     createDatabase?: boolean;
-    createTablesUsingSheetNames?: boolean;
-    generateId?: boolean;
+    createTables?: boolean;
 }
 
 export function createDatabase(dbName: string): string {
@@ -88,12 +87,12 @@ export async function excelToPostgresDb(connectionInfo: Connection, filePath: st
         await executeQuery(connectionInfo, insertQuery);
     }
 
-    if (options && !options.createDatabase && options.createTablesUsingSheetNames) {
+    if (options && !options.createDatabase && options.createTables) {
         await executeQuery(connectionInfo, tableQuery);
         // await executeQuery(connectionInfo, insertQuery);
     }
 
-    if (!options.createDatabase && !options.createTablesUsingSheetNames) {
+    if (!options.createDatabase && !options.createTables) {
         await executeQuery(connectionInfo, insertQuery);
     }
 }
