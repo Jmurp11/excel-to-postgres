@@ -16,50 +16,50 @@ export interface Fields<T> {
 }
 
 export function getFields<T>(data: T): Fields<T> {
-    const names = Object.keys(data);
-    const values = Object.values(data);
+	const names = Object.keys(data);
+	const values = Object.values(data);
 
-    return { names, values };
+	return { names, values };
 }
 
 export function getColumns<T>(fields: Fields<T>): Column[] {
-    let tableColumns: Column[] = [];
+	const tableColumns: Column[] = [];
 
-    fields.values.forEach((value: T, index: number) => {
-        switch (typeof value) {
-            case 'string':
-                tableColumns.push({
-                    name: fields.names[index],
-                    type: SQLType.VARCHAR
-                });
-                break;
-            case 'number':
-                tableColumns.push({
-                    name: fields.names[index],
-                    type: SQLType.FLOAT
-                });
-                break;
-            case 'boolean':
-                tableColumns.push({
-                    name: fields.names[index],
-                    type: SQLType.BOOLEAN
-                });
-                break;
-            default:
-                break;
-        }
-    });
+	fields.values.forEach((value: T, index: number) => {
+		switch (typeof value) {
+		case 'string':
+			tableColumns.push({
+				name: fields.names[index],
+				type: SQLType.VARCHAR
+			});
+			break;
+		case 'number':
+			tableColumns.push({
+				name: fields.names[index],
+				type: SQLType.FLOAT
+			});
+			break;
+		case 'boolean':
+			tableColumns.push({
+				name: fields.names[index],
+				type: SQLType.BOOLEAN
+			});
+			break;
+		default:
+			break;
+		}
+	});
 
-    return tableColumns;
+	return tableColumns;
 }
 
 export function formatColumns(columns: Column[]): string[] {
-    let formattedColumns: string[] = [];
+	const formattedColumns: string[] = [];
 
-    columns.forEach((col: Column) => {
-        const formatted = `${col.name.replace(/\s/g, '')} ${col.type}`;
-        formattedColumns.push(formatted);
-    });
+	columns.forEach((col: Column) => {
+		const formatted = `${col.name.replace(/\s/g, '')} ${col.type}`;
+		formattedColumns.push(formatted);
+	});
 
-    return formattedColumns;
+	return formattedColumns;
 }
