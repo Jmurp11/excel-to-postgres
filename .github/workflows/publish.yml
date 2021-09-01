@@ -40,7 +40,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs: [quality]
     steps:
-    steps:
     - name: Checkout repository
       uses: actions/checkout@v2
     - name: Publish if version has been updated
