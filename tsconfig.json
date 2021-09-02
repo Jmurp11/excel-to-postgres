@@ -2,10 +2,10 @@
     "compileOnSave": false,
     "compilerOptions": {
       "baseUrl": "./",
-      "outDir": "./dist/out-tsc",
+      "outDir": "./dist/",
       "sourceMap": true,
-      "declaration": false,
-      "module": "esnext",
+      "declaration": true,
+      "module": "commonjs",
       "moduleResolution": "node",
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
@@ -19,6 +19,7 @@
         "dom",
         "esnext.asynciterable"
       ]
-    }
+    },
+    "exclude": ["dist", "node_modules", "**/*.test.ts"]
   }
   
