@@ -1,5 +1,5 @@
 const mockJSON = {
-	'person name': 'Person 1',
+	name: 'Person 1',
 	age: 18,
 	isDev: true
 };
@@ -21,7 +21,7 @@ export const columns = [
 
 export const etlProcesses = {
 	sheet: {
-		name: 'Person 1',
+		name: mockJSON.name,
 		age: mockJSON.age,
 		isDev: mockJSON.isDev
 	},
@@ -32,7 +32,7 @@ export const etlProcesses = {
 			'isDev'
 		],
 		values: [
-			'Person 1',
+			mockJSON.name,
 			mockJSON.age,
 			mockJSON.isDev
 		]
@@ -54,5 +54,5 @@ export const sqlResults = {
 	createTable: `CREATE TABLE ${sqlInfo.tableName} (
         ${etlProcesses.formattedColumns}
     );`,
-	insert: `INSERT INTO ${sqlInfo.tableName.replace(/\s/g, '')}(name,age,isDev) VALUES ('Person 1',${mockJSON.age},${mockJSON.isDev});`
+	insert: `INSERT INTO ${sqlInfo.tableName.replace(/\s/g, '')}(name,age,isDev) VALUES ('${mockJSON.name}',${mockJSON.age},${mockJSON.isDev});`
 };

@@ -1,6 +1,6 @@
 {
   "name": "@murphyj1011/excel-to-postgres",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "description": "Quickly export an Excel Workbook to a Postgres Database",
   "main": "src/main.ts",
   "bin": "src/main.ts",
