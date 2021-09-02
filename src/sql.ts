@@ -82,7 +82,9 @@ export async function excelToPostgresDb(connectionInfo: Connection, filePath: st
 	});
 
 	if (options && options.createDatabase) {
-		await executeQuery(connectionInfo, createDatabase(connectionInfo.database));
+		const initialConnect = { ...connectionInfo, database: null };
+
+		await executeQuery(initialConnect, createDatabase(connectionInfo.database));
 		await executeQuery(connectionInfo, tableQuery);
 		await executeQuery(connectionInfo, insertQuery);
 	}
