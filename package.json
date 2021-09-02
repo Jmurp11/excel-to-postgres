@@ -1,13 +1,14 @@
 {
   "name": "excel-to-postgres",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Quickly export an Excel Workbook to a Postgres Database",
-  "main": "src/main.ts",
-  "bin": "src/main.ts",
+  "main": "dist/main.js",
+  "bin": "dist/main.js",
   "scripts": {
     "start": "ts-node src/main.ts",
     "test": "jest",
     "commit": "git cz",
+    "build": "tsc",
     "semantic-release": "semantic-release"
   },
   "repository": {
@@ -42,11 +43,11 @@
     "semantic-release": "~17.4.7",
     "ts-jest": "~27.0.5",
     "ts-node": "~10.2.1",
-    "ts-node-dev": "~1.1.8"
+    "ts-node-dev": "~1.1.8",
+    "typescript": "~4.4.2"
   },
   "dependencies": {
     "pg": "~8.7.1",
-    "typescript": "~4.4.2",
     "xlsx": "~0.17.1"
   },
   "config": {
