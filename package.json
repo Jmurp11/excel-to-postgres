@@ -21,10 +21,15 @@
   "keywords": [
     "excel",
     "xlsx",
-    "postgres"
+    "postgres",
+    "sql",
+    "export",
+    "convert",
+    "excel-to-postgres",
+    "exceltopostgres"
   ],
   "author": "jmurp11",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Jmurp11/excel-to-postgres/issues"
   },
