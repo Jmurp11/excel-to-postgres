@@ -34,7 +34,7 @@ Supports two options, both of which are optional:
 
 * *createDatabase* - _true | false_ (Defaults to false)
 * *createTables* - _true | false_ (Defaults to false)
-
+* *generatePrimaryKeys* - _true | false_ (Defaults to false.  Supports multiple primary keys.  Append '_pk' to the column name in the workbook that will be the primary key)
 # Testing
 
 This package's tests are written using [Jest](https://jestjs.io/).  To execute, run:

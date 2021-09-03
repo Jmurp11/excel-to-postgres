@@ -1,18 +1,26 @@
-enum SQLType {
-    VARCHAR = 'VARCHAR',
-    BOOLEAN = 'BOOLEAN',
-    FLOAT = 'FLOAT',
-    INT = 'INT'
+export enum SQLType {
+	VARCHAR = 'VARCHAR',
+	BOOLEAN = 'BOOLEAN',
+	FLOAT = 'FLOAT',
+	INT = 'INT'
 }
 
+export enum SQLKeyword {
+	PRIMARY_KEY = 'PRIMARY KEY'
+}
 export interface Column {
-    name: string;
-    type: string;
+	name: string;
+	type: string;
 }
 
 export interface Fields<T> {
-    names: string[];
-    values: T[];
+	names: string[];
+	values: T[];
+}
+
+interface FormatColumnsResult {
+	formattedColumns: string[];
+	primaryKeyIndex: number[];
 }
 
 export function getFields<T>(data: T): Fields<T> {
@@ -53,13 +61,52 @@ export function getColumns<T>(fields: Fields<T>): Column[] {
 	return tableColumns;
 }
 
-export function formatColumns(columns: Column[]): string[] {
+export function formatColumns(columns: Column[]): FormatColumnsResult {
 	const formattedColumns: string[] = [];
 
-	columns.forEach((col: Column) => {
+	const primaryKeyIndex: number [] = [];
+
+	columns.forEach((col: Column, index: number) => {
 		const formatted = `${col.name.replace(/\s/g, '')} ${col.type}`;
+
+		if (checkPrimaryKey(col.name)) {
+			primaryKeyIndex.push(index);
+		}
+
 		formattedColumns.push(formatted);
 	});
 
-	return formattedColumns;
+	return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
+}
+
+export function checkPrimaryKey(col: string): boolean {
+	const primaryKeyIndicator = '_pk';
+
+	if (col.substring(col.length, col.length - 3).toUpperCase() === primaryKeyIndicator.toUpperCase()) {
+		return true;
+	}
+
+	return false;
+}
+
+export function formatPrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
+	if (formatColumnsResult.primaryKeyIndex.length === 1) {
+		const primaryColumn = formatColumnsResult.formattedColumns[formatColumnsResult.primaryKeyIndex[0]].concat(` ${SQLKeyword.PRIMARY_KEY}`);
+		
+		formatColumnsResult.formattedColumns[formatColumnsResult.primaryKeyIndex[0]] = primaryColumn;
+
+		return formatColumnsResult.formattedColumns;
+	}
+
+	const primaryKeys: string[] = [];
+
+	formatColumnsResult.primaryKeyIndex.forEach(index => {
+		primaryKeys.push(formatColumnsResult.formattedColumns[index].substring(0, formatColumnsResult.formattedColumns[index].indexOf(' ')));
+	});
+
+	const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
+
+	formatColumnsResult.formattedColumns.push(primaryColumns);
+
+	return formatColumnsResult.formattedColumns;
 }

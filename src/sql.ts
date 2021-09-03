@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { getFields, Fields, Column, getColumns, formatColumns } from './etl-processes';
+import { getFields, Fields, Column, getColumns, formatColumns, formatPrimaryKey } from './etl-processes';
 import { readExcel } from './excel';
 
 export interface Connection {
@@ -13,16 +13,17 @@ export interface Connection {
 export interface Options {
     createDatabase?: boolean;
     createTables?: boolean;
+	generatePrimaryKeys?: boolean;
 }
 
 export function createDatabase(dbName: string): string {
 	return `CREATE DATABASE ${dbName};`;
 }
 
-export function createTable<T>(tableName: string, data: T): string {
+export function createTable<T>(tableName: string, data: T, generatePrimaryKeys?: boolean): string {
 	const fields: Fields<T> = getFields(data);
 	const columns: Column[] = getColumns(fields);
-	const formattedColumns: string[] = formatColumns(columns);
+	const formattedColumns: string[] = generatePrimaryKeys ? formatPrimaryKey(formatColumns(columns)) : formatColumns(columns).formattedColumns;
 
 	return `CREATE TABLE ${tableName.replace(/\s/g, '')} (
         ${formattedColumns}
@@ -77,7 +78,7 @@ export async function excelToPostgresDb(connectionInfo: Connection, filePath: st
 	let tableQuery = '';
 
 	sheets.forEach(async (sheet) => {
-		tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0]));
+		tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0], options?.generatePrimaryKeys));
 		insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
 	});
 
