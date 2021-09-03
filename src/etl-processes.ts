@@ -90,6 +90,11 @@ export function checkPrimaryKey(col: string): boolean {
 }
 
 export function formatPrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
+
+	if (formatColumnsResult.primaryKeyIndex.length < 1) {
+		return formatColumnsResult.formattedColumns;
+	}
+	
 	if (formatColumnsResult.primaryKeyIndex.length === 1) {
 		const primaryColumn = formatColumnsResult.formattedColumns[formatColumnsResult.primaryKeyIndex[0]].concat(` ${SQLKeyword.PRIMARY_KEY}`);
 		
