@@ -13,17 +13,17 @@ export interface Connection {
 export interface Options {
     createDatabase?: boolean;
     createTables?: boolean;
-	generatePrimaryKeys?: boolean;
+	useExistingPrimaryKeys?: boolean;
 }
 
 export function createDatabase(dbName: string): string {
 	return `CREATE DATABASE ${dbName};`;
 }
 
-export function createTable<T>(tableName: string, data: T, generatePrimaryKeys?: boolean): string {
+export function createTable<T>(tableName: string, data: T, useExistingPrimaryKeys?: boolean): string {
 	const fields: Fields<T> = getFields(data);
 	const columns: Column[] = getColumns(fields);
-	const formattedColumns: string[] = generatePrimaryKeys ? formatPrimaryKey(formatColumns(columns)) : formatColumns(columns).formattedColumns;
+	const formattedColumns: string[] = useExistingPrimaryKeys ? formatPrimaryKey(formatColumns(columns)) : formatColumns(columns).formattedColumns;
 
 	return `CREATE TABLE ${tableName.replace(/\s/g, '')} (
         ${formattedColumns}
@@ -78,7 +78,7 @@ export async function excelToPostgresDb(connectionInfo: Connection, filePath: st
 	let tableQuery = '';
 
 	sheets.forEach(async (sheet) => {
-		tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0], options?.generatePrimaryKeys));
+		tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0], options?.useExistingPrimaryKeys));
 		insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
 	});
 
