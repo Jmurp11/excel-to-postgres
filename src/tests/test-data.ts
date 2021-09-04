@@ -104,7 +104,7 @@ export const etlProcesses = {
 		`${columns_one_pk[0].name} ${columns_one_pk[0].type}`,
 		`${columns_one_pk[1].name} ${columns_one_pk[1].type}`,
 		`${columns_one_pk[2].name} ${columns_one_pk[2].type}`,
-		`id ${SQLType.INT} ${SQLKeyword.PRIMARY_KEY} ${SQLKeyword.NOT_NULL} ${SQLKeyword.SERIAL}`
+		`id ${SQLType.INT} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY} ${SQLKeyword.SERIAL}`
 	],
 };
 
