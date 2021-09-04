@@ -119,7 +119,7 @@ export function formatPrimaryKey(formatColumnsResult: FormatColumnsResult): stri
 }
 
 export function generatePrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
-	const primaryColumn = `id ${SQLType.INT} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY} ${SQLKeyword.SERIAL}`;
+	const primaryColumn = `id ${SQLKeyword.SERIAL} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY}`;
 
 	formatColumnsResult.formattedColumns.push(primaryColumn);
 
