@@ -6,7 +6,9 @@ export enum SQLType {
 }
 
 export enum SQLKeyword {
-	PRIMARY_KEY = 'PRIMARY KEY'
+	PRIMARY_KEY = 'PRIMARY KEY',
+	NOT_NULL = 'NOT NULL',
+	SERIAL = 'SERIAL'
 }
 export interface Column {
 	name: string;
@@ -112,6 +114,14 @@ export function formatPrimaryKey(formatColumnsResult: FormatColumnsResult): stri
 	const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
 
 	formatColumnsResult.formattedColumns.push(primaryColumns);
+
+	return formatColumnsResult.formattedColumns;
+}
+
+export function generatePrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
+	const primaryColumn = `id ${SQLType.INT} ${SQLKeyword.PRIMARY_KEY} ${SQLKeyword.NOT_NULL} ${SQLKeyword.SERIAL}`;
+
+	formatColumnsResult.formattedColumns.push(primaryColumn);
 
 	return formatColumnsResult.formattedColumns;
 }

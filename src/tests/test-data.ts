@@ -99,7 +99,13 @@ export const etlProcesses = {
 		`${columns_multiple_pk[1].name} ${columns_multiple_pk[1].type}`,
 		`${columns_multiple_pk[2].name} ${columns_multiple_pk[2].type}`,
 		`${SQLKeyword.PRIMARY_KEY} (${columns_multiple_pk[0].name},${columns_multiple_pk[1].name})`
-	]
+	],
+	formattedColumnsGeneratedPrimaryKey: [
+		`${columns_one_pk[0].name} ${columns_one_pk[0].type}`,
+		`${columns_one_pk[1].name} ${columns_one_pk[1].type}`,
+		`${columns_one_pk[2].name} ${columns_one_pk[2].type}`,
+		`id ${SQLType.INT} ${SQLKeyword.PRIMARY_KEY} ${SQLKeyword.NOT_NULL} ${SQLKeyword.SERIAL}`
+	],
 };
 
 export const sqlInfo = {
@@ -109,6 +115,9 @@ export const sqlInfo = {
 
 export const sqlResults = {
 	createDatabase: `CREATE DATABASE ${sqlInfo.database};`,
+	createTableGeneratedPrimaryKey: `CREATE TABLE ${sqlInfo.tableName} (
+        ${etlProcesses.formattedColumnsGeneratedPrimaryKey}
+    );`,
 	createTableOnePrimaryKey: `CREATE TABLE ${sqlInfo.tableName} (
         ${etlProcesses.formattedColumnsOnePrimaryKey}
     );`,
