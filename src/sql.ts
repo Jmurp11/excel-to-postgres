@@ -34,7 +34,7 @@ export function createTable<T>(tableName: string, data: T, primaryKeyOptions: st
 	let formattedColumns: string[] = [];
 
 	if (primaryKeyOptions === PrimaryKeyOptions.GENERATE) {
-		formattedColumns = generatePrimaryKey(formatColumns(columns));;
+		formattedColumns = generatePrimaryKey(formatColumns(columns));
 	} else if (primaryKeyOptions === PrimaryKeyOptions.USE_EXISTING) {
 		formattedColumns = formatPrimaryKey(formatColumns(columns));
 	} else if (primaryKeyOptions === PrimaryKeyOptions.NO_PRIMARY_KEY) {

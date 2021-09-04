@@ -30,7 +30,7 @@ excelToPostgresDb({
 
 ## Options
 
-Supports two options, both of which are optional:
+Supports four options, all of which are optional:
 
 * *createDatabase* - _true | false_ (Defaults to false)
 * *createTables* - _true | false_ (Defaults to false)
