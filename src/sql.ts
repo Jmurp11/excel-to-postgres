@@ -31,21 +31,23 @@ export function createTable<T>(tableName: string, data: T, primaryKeyOptions: st
 	const fields: Fields<T> = getFields(data);
 	const columns: Column[] = getColumns(fields);
 
-	let formattedColumns: string[] = [];
-
-	if (primaryKeyOptions === PrimaryKeyOptions.GENERATE) {
-		formattedColumns = generatePrimaryKey(formatColumns(columns));
-	} else if (primaryKeyOptions === PrimaryKeyOptions.USE_EXISTING) {
-		formattedColumns = formatPrimaryKey(formatColumns(columns));
-	} else if (primaryKeyOptions === PrimaryKeyOptions.NO_PRIMARY_KEY) {
-		formattedColumns = formatColumns(columns).formattedColumns;
-	} else {
-		return;
-	}
+	const formattedColumns: string[] = checkPrimaryKeyOptions(primaryKeyOptions, columns);
 
 	return `CREATE TABLE ${tableName.replace(/\s/g, '')} (
         ${formattedColumns}
     );`;
+}
+
+export function checkPrimaryKeyOptions(primaryKeyOptions: string, columns: Column[]): string[] {
+	if (primaryKeyOptions === PrimaryKeyOptions.GENERATE) {
+		return generatePrimaryKey(formatColumns(columns));
+	} else if (primaryKeyOptions === PrimaryKeyOptions.USE_EXISTING) {
+		return formatPrimaryKey(formatColumns(columns));
+	} else if (primaryKeyOptions === PrimaryKeyOptions.NO_PRIMARY_KEY) {
+		return formatColumns(columns).formattedColumns;
+	} else {
+		return;
+	}
 }
 
 export function insert<T>(table: string, data: T[]): string {
