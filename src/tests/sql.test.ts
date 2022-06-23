@@ -1,6 +1,7 @@
 import { createDatabase, createTable, handlePrimaryKey, insert, PrimaryKeyOptions } from '../sql';
 import { etlProcesses, sqlInfo, sqlResults } from './test-data';
 
+// TODO: Tests failing because of differences in spacing
 describe('SQL tests', () => {
 	test('create database', () => {
 		expect(createDatabase(sqlInfo.database)).toEqual(sqlResults.createDatabase);
