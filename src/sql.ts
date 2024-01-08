@@ -1,136 +1,210 @@
-import { Pool } from 'pg';
-import { getFields, Fields, Column, getColumns, formatColumns, formatPrimaryKey, generatePrimaryKey } from './etl-processes';
-import { readExcel } from './excel';
+import { Pool } from "pg";
+import {
+  Column,
+  Fields,
+  formatColumns,
+  formatPrimaryKey,
+  generatePrimaryKey,
+  getColumns,
+  getFields,
+} from "./etl-processes";
+import { readExcel } from "./excel";
 
 export enum PrimaryKeyOptions {
-	GENERATE = 'GENERATE',
-	USE_EXISTING = 'USE EXISTING',
-	NO_PRIMARY_KEY = 'NO PRIMARY KEY'
+  GENERATE = "GENERATE",
+  USE_EXISTING = "USE EXISTING",
+  NO_PRIMARY_KEY = "NO PRIMARY KEY",
 }
 
 export interface Connection {
-	user: string;
-	host: string;
-	database: string;
-	password: string;
-	port: number;
+  user: string;
+  host: string;
+  database: string;
+  password: string;
+  port: number;
 }
 
 export interface Options {
-	createDatabase?: boolean;
-	createTables?: boolean;
-	generatePrimaryKey?: boolean;
-	useExistingPrimaryKeys?: boolean;
+  createDatabase?: boolean;
+  createTables?: boolean;
+  generatePrimaryKey?: boolean;
+  useExistingPrimaryKeys?: boolean;
 }
 
+// TODO: handle csv by manually passing db name and table name
 export function createDatabase(dbName: string): string {
-	return `CREATE DATABASE ${dbName};`;
+  try {
+    return `CREATE DATABASE ${dbName};`;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-export function createTable<T>(tableName: string, data: T, primaryKeyOptions: string): string {
-	const fields: Fields<T> = getFields(data);
-	const columns: Column[] = getColumns(fields);
+export function createTable<T>(
+  tableName: string,
+  data: T,
+  primaryKeyOptions: string
+): string {
+  try {
+    const fields: Fields<T> = getFields(data);
+    const columns: Column[] = getColumns(fields);
 
-	const formattedColumns: string[] = checkPrimaryKeyOptions(primaryKeyOptions, columns);
+    const formattedColumns: string[] = checkPrimaryKeyOptions(
+      primaryKeyOptions,
+      columns
+    );
 
-	return `CREATE TABLE ${tableName.replace(/\s/g, '')} (
+    return `CREATE TABLE ${tableName.replace(/\s/g, "")} (
         ${formattedColumns}
     );`;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-export function checkPrimaryKeyOptions(primaryKeyOptions: string, columns: Column[]): string[] {
-	if (primaryKeyOptions === PrimaryKeyOptions.GENERATE) {
-		return generatePrimaryKey(formatColumns(columns));
-	} else if (primaryKeyOptions === PrimaryKeyOptions.USE_EXISTING) {
-		return formatPrimaryKey(formatColumns(columns));
-	} else if (primaryKeyOptions === PrimaryKeyOptions.NO_PRIMARY_KEY) {
-		return formatColumns(columns).formattedColumns;
-	} else {
-		return;
-	}
+export function checkPrimaryKeyOptions(
+  primaryKeyOptions: string,
+  columns: Column[]
+): string[] {
+  try {
+    if (primaryKeyOptions === PrimaryKeyOptions.GENERATE) {
+      return generatePrimaryKey(formatColumns(columns));
+    } else if (primaryKeyOptions === PrimaryKeyOptions.USE_EXISTING) {
+      return formatPrimaryKey(formatColumns(columns));
+    } else if (primaryKeyOptions === PrimaryKeyOptions.NO_PRIMARY_KEY) {
+      return formatColumns(columns).formattedColumns;
+    } else {
+      return;
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 export function insert<T>(table: string, data: T[]): string {
-	const columns = getFields(data[0]).names;
-	let insertQuery = `INSERT INTO ${table.replace(/\s/g, '')}(${columns}) VALUES `;
+  try {
+    const columns = getFields(data[0]).names;
+    let insertQuery = `INSERT INTO ${table.replace(
+      /\s/g,
+      ""
+    )}(${columns}) VALUES `;
 
+    data.forEach((row, index) => {
+      const values = getFields(row).values;
 
-	data.forEach((row, index) => {
-		const values = getFields(row).values;
+      const fieldValues = [];
 
-		const fieldValues = [];
+      values.forEach((value) => {
+        if (typeof value === "string") {
+          fieldValues.push(`'${value.replace(/'/g, "''")}'`);
+        } else {
+          fieldValues.push(`${value}`);
+        }
+      });
 
-		values.forEach((value) => {
-			if (typeof value === 'string') {
-				fieldValues.push(`'${value.replace(/'/g, '\'\'')}'`);
-			} else {
-				fieldValues.push(`${value}`);
-			}
-		});
+      insertQuery = insertQuery.concat(`(${fieldValues})`);
+      if (data.length - 1 > index) {
+        insertQuery = insertQuery.concat(",");
+      } else {
+        insertQuery = insertQuery.concat(";");
+      }
+    });
 
-		insertQuery = insertQuery.concat(`(${fieldValues})`);
-		if (data.length - 1 > index) {
-			insertQuery = insertQuery.concat(',');
-		} else {
-			insertQuery = insertQuery.concat(';');
-		}
-	});
-
-	return insertQuery;
+    return insertQuery;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function executeQuery(connectionInfo: Connection, query: string) {
-	const pool = new Pool({ ...connectionInfo });
+  const pool = new Pool({ ...connectionInfo });
 
-	try {
-		await pool.query(query);
-	} catch (err) {
-		return console.log(err);
-	}
+  try {
+    await pool.query(query);
+  } catch (err) {
+    return console.log(err);
+  }
 
-	await pool.end();
+  await pool.end();
 }
 
 export function handlePrimaryKey(options: Options): string {
-	if (options.generatePrimaryKey) {
-		return PrimaryKeyOptions.GENERATE;
-	} else if (options.useExistingPrimaryKeys) {
-		return PrimaryKeyOptions.USE_EXISTING;
-	} else {
-		return PrimaryKeyOptions.NO_PRIMARY_KEY;
-	}
+  try {
+    if (options.generatePrimaryKey) {
+      return PrimaryKeyOptions.GENERATE;
+    } else if (options.useExistingPrimaryKeys) {
+      return PrimaryKeyOptions.USE_EXISTING;
+    } else {
+      return PrimaryKeyOptions.NO_PRIMARY_KEY;
+    }
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-export async function excelToPostgresDb(connectionInfo: Connection, filePath: string, options?: Options): Promise<void> {
+export async function excelToPostgresDb(
+  connectionInfo: Connection,
+  filePath: string,
+  options?: Options
+): Promise<void> {
+  try {
+    if (options?.generatePrimaryKey && options?.useExistingPrimaryKeys) {
+      return console.error(
+        "Cannot generate primary keys column and also use existing primary keys"
+      );
+    }
 
-	if (options?.generatePrimaryKey && options?.useExistingPrimaryKeys) {
-		return console.error('Cannot generate primary keys column and also use existing primary keys');
-	}
+    const sheets = readExcel(filePath);
 
-	const sheets = readExcel(filePath);
+    let insertQuery = "";
+    let tableQuery = "";
 
-	let insertQuery = '';
-	let tableQuery = '';
- 
-	sheets.forEach(async (sheet) => {
-		tableQuery = tableQuery.concat(createTable(sheet.title, sheet.data[0], handlePrimaryKey(options)));
-		insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
-	});
+    sheets.forEach(async (sheet) => {
+      tableQuery = tableQuery.concat(
+        createTable(sheet.title, sheet.data[0], handlePrimaryKey(options))
+      );
+      insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
+    });
 
-	if (options && options.createDatabase) {
-		const initialConnect = { ...connectionInfo, database: null };
+    if (options && options.createDatabase) {
+      executeQueryWithCreateDB(connectionInfo, tableQuery, insertQuery);
+    } else if (options && !options.createDatabase && options.createTables) {
+      executeQueryWithCreateTable(connectionInfo, tableQuery, insertQuery);
+    } else if (!options.createDatabase && !options.createTables) {
+      await executeQuery(connectionInfo, insertQuery);
+    } else {
+      console.log("No changes made...");
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-		await executeQuery(initialConnect, createDatabase(connectionInfo.database));
-		await executeQuery(connectionInfo, tableQuery);
-		await executeQuery(connectionInfo, insertQuery);
-	}
+async function executeQueryWithCreateDB(
+  connectionInfo: Connection,
+  tableQuery: string,
+  insertQuery: string
+) {
+  try {
+    const initialConnect = { ...connectionInfo, database: null };
 
-	if (options && !options.createDatabase && options.createTables) {
-		await executeQuery(connectionInfo, tableQuery);
-		await executeQuery(connectionInfo, insertQuery);
-	}
+    await executeQuery(initialConnect, createDatabase(connectionInfo.database));
+    await executeQuery(connectionInfo, tableQuery);
+    await executeQuery(connectionInfo, insertQuery);
+  } catch (err) {
+    console.error(err);
+  }
+}
 
-	if (!options.createDatabase && !options.createTables) {
-		await executeQuery(connectionInfo, insertQuery);
-	}
+async function executeQueryWithCreateTable(
+  connectionInfo: Connection,
+  tableQuery: string,
+  insertQuery: string
+) {
+  try {
+    await executeQuery(connectionInfo, tableQuery);
+    await executeQuery(connectionInfo, insertQuery);
+  } catch (err) {
+    console.error(err);
+  }
 }

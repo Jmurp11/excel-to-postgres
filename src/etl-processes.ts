@@ -1,127 +1,141 @@
 export enum SQLType {
-	VARCHAR = 'VARCHAR',
-	BOOLEAN = 'BOOLEAN',
-	FLOAT = 'FLOAT',
-	INT = 'INT'
+  VARCHAR = "VARCHAR",
+  BOOLEAN = "BOOLEAN",
+  FLOAT = "FLOAT",
+  INT = "INT",
 }
 
 export enum SQLKeyword {
-	PRIMARY_KEY = 'PRIMARY KEY',
-	NOT_NULL = 'NOT NULL',
-	SERIAL = 'SERIAL'
+  PRIMARY_KEY = "PRIMARY KEY",
+  NOT_NULL = "NOT NULL",
+  SERIAL = "SERIAL",
 }
 export interface Column {
-	name: string;
-	type: string;
+  name: string;
+  type: string;
 }
 
 export interface Fields<T> {
-	names: string[];
-	values: T[];
+  names: string[];
+  values: T[];
 }
 
 interface FormatColumnsResult {
-	formattedColumns: string[];
-	primaryKeyIndex: number[];
+  formattedColumns: string[];
+  primaryKeyIndex: number[];
 }
 
 export function getFields<T>(data: T): Fields<T> {
-	const names = Object.keys(data);
-	const values = Object.values(data);
+  const names = Object.keys(data);
+  const values = Object.values(data);
 
-	return { names, values };
+  return { names, values };
 }
 
 export function getColumns<T>(fields: Fields<T>): Column[] {
-	const tableColumns: Column[] = [];
-
-	fields.values.forEach((value: T, index: number) => {
-		switch (typeof value) {
-		case 'string':
-			tableColumns.push({
-				name: fields.names[index],
-				type: SQLType.VARCHAR
-			});
-			break;
-		case 'number':
-			tableColumns.push({
-				name: fields.names[index],
-				type: SQLType.FLOAT
-			});
-			break;
-		case 'boolean':
-			tableColumns.push({
-				name: fields.names[index],
-				type: SQLType.BOOLEAN
-			});
-			break;
-		default:
-			break;
-		}
-	});
-
-	return tableColumns;
+  return fields.values.map((value: T, index: number) => {
+    switch (typeof value) {
+      case "string":
+        return {
+          name: fields.names[index],
+          type: SQLType.VARCHAR,
+        };
+      case "number":
+        return {
+          name: fields.names[index],
+          type: SQLType.FLOAT,
+        };
+      case "boolean":
+        return {
+          name: fields.names[index],
+          type: SQLType.BOOLEAN,
+        };
+      default:
+        break;
+    }
+  });
 }
 
 export function formatColumns(columns: Column[]): FormatColumnsResult {
-	const formattedColumns: string[] = [];
+  const primaryKeyIndex: number[] = [];
 
-	const primaryKeyIndex: number [] = [];
+  const formattedColumns: string[] = columns.map((col: Column, index: number) =>
+    formatColumn(col, primaryKeyIndex, index)
+  );
 
-	columns.forEach((col: Column, index: number) => {
-		const formatted = `${col.name.replace(/\s/g, '')} ${col.type}`;
+  return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
+}
 
-		if (checkPrimaryKey(col.name)) {
-			primaryKeyIndex.push(index);
-		}
+export function formatColumn(
+  col: Column,
+  primaryKeyIndex: number[],
+  index: number
+) {
+  const formatted = `${col.name.replace(/\s/g, "")} ${col.type}`;
 
-		formattedColumns.push(formatted);
-	});
+  if (checkPrimaryKey(col.name)) {
+    primaryKeyIndex.push(index);
+  }
 
-	return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
+  return formatted;
 }
 
 export function checkPrimaryKey(col: string): boolean {
-	const primaryKeyIndicator = '_pk';
+  const primaryKeyIndicator = "_pk";
 
-	if (col.substring(col.length, col.length - 3).toUpperCase() === primaryKeyIndicator.toUpperCase()) {
-		return true;
-	}
+  if (
+    col.substring(col.length, col.length - 3).toUpperCase() ===
+    primaryKeyIndicator.toUpperCase()
+  ) {
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
-export function formatPrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
+export function formatPrimaryKey(
+  formatColumnsResult: FormatColumnsResult
+): string[] {
+  if (formatColumnsResult.primaryKeyIndex.length < 1) {
+    return formatColumnsResult.formattedColumns;
+  }
 
-	if (formatColumnsResult.primaryKeyIndex.length < 1) {
-		return formatColumnsResult.formattedColumns;
-	}
-	
-	if (formatColumnsResult.primaryKeyIndex.length === 1) {
-		const primaryColumn = formatColumnsResult.formattedColumns[formatColumnsResult.primaryKeyIndex[0]].concat(` ${SQLKeyword.PRIMARY_KEY}`);
-		
-		formatColumnsResult.formattedColumns[formatColumnsResult.primaryKeyIndex[0]] = primaryColumn;
+  if (formatColumnsResult.primaryKeyIndex.length === 1) {
+    const primaryColumn = formatColumnsResult.formattedColumns[
+      formatColumnsResult.primaryKeyIndex[0]
+    ].concat(` ${SQLKeyword.PRIMARY_KEY}`);
 
-		return formatColumnsResult.formattedColumns;
-	}
+    formatColumnsResult.formattedColumns[
+      formatColumnsResult.primaryKeyIndex[0]
+    ] = primaryColumn;
 
-	const primaryKeys: string[] = [];
+    return formatColumnsResult.formattedColumns;
+  }
 
-	formatColumnsResult.primaryKeyIndex.forEach(index => {
-		primaryKeys.push(formatColumnsResult.formattedColumns[index].substring(0, formatColumnsResult.formattedColumns[index].indexOf(' ')));
-	});
+  const primaryKeys: string[] = [];
 
-	const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
+  formatColumnsResult.primaryKeyIndex.forEach((index) => {
+    primaryKeys.push(
+      formatColumnsResult.formattedColumns[index].substring(
+        0,
+        formatColumnsResult.formattedColumns[index].indexOf(" ")
+      )
+    );
+  });
 
-	formatColumnsResult.formattedColumns.push(primaryColumns);
+  const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
 
-	return formatColumnsResult.formattedColumns;
+  formatColumnsResult.formattedColumns.push(primaryColumns);
+
+  return formatColumnsResult.formattedColumns;
 }
 
-export function generatePrimaryKey(formatColumnsResult: FormatColumnsResult): string[] {
-	const primaryColumn = `id ${SQLKeyword.SERIAL} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY}`;
+export function generatePrimaryKey(
+  formatColumnsResult: FormatColumnsResult
+): string[] {
+  const primaryColumn = `id ${SQLKeyword.SERIAL} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY}`;
 
-	formatColumnsResult.formattedColumns.push(primaryColumn);
+  formatColumnsResult.formattedColumns.push(primaryColumn);
 
-	return formatColumnsResult.formattedColumns;
+  return formatColumnsResult.formattedColumns;
 }
