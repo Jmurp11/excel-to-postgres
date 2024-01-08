@@ -1,14 +1,14 @@
 export enum SQLType {
-  VARCHAR = "VARCHAR",
-  BOOLEAN = "BOOLEAN",
-  FLOAT = "FLOAT",
-  INT = "INT",
+  VARCHAR = 'VARCHAR',
+  BOOLEAN = 'BOOLEAN',
+  FLOAT = 'FLOAT',
+  INT = 'INT',
 }
 
 export enum SQLKeyword {
-  PRIMARY_KEY = "PRIMARY KEY",
-  NOT_NULL = "NOT NULL",
-  SERIAL = "SERIAL",
+  PRIMARY_KEY = 'PRIMARY KEY',
+  NOT_NULL = 'NOT NULL',
+  SERIAL = 'SERIAL',
 }
 export interface Column {
   name: string;
@@ -26,116 +26,116 @@ interface FormatColumnsResult {
 }
 
 export function getFields<T>(data: T): Fields<T> {
-  const names = Object.keys(data);
-  const values = Object.values(data);
+	const names = Object.keys(data);
+	const values = Object.values(data);
 
-  return { names, values };
+	return { names, values };
 }
 
 export function getColumns<T>(fields: Fields<T>): Column[] {
-  return fields.values.map((value: T, index: number) => {
-    switch (typeof value) {
-      case "string":
-        return {
-          name: fields.names[index],
-          type: SQLType.VARCHAR,
-        };
-      case "number":
-        return {
-          name: fields.names[index],
-          type: SQLType.FLOAT,
-        };
-      case "boolean":
-        return {
-          name: fields.names[index],
-          type: SQLType.BOOLEAN,
-        };
-      default:
-        break;
-    }
-  });
+	return fields.values.map((value: T, index: number) => {
+		switch (typeof value) {
+		case 'string':
+			return {
+				name: fields.names[index],
+				type: SQLType.VARCHAR,
+			};
+		case 'number':
+			return {
+				name: fields.names[index],
+				type: SQLType.FLOAT,
+			};
+		case 'boolean':
+			return {
+				name: fields.names[index],
+				type: SQLType.BOOLEAN,
+			};
+		default:
+			break;
+		}
+	});
 }
 
 export function formatColumns(columns: Column[]): FormatColumnsResult {
-  const primaryKeyIndex: number[] = [];
+	const primaryKeyIndex: number[] = [];
 
-  const formattedColumns: string[] = columns.map((col: Column, index: number) =>
-    formatColumn(col, primaryKeyIndex, index)
-  );
+	const formattedColumns: string[] = columns.map((col: Column, index: number) =>
+		formatColumn(col, primaryKeyIndex, index)
+	);
 
-  return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
+	return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
 }
 
 export function formatColumn(
-  col: Column,
-  primaryKeyIndex: number[],
-  index: number
+	col: Column,
+	primaryKeyIndex: number[],
+	index: number
 ) {
-  const formatted = `${col.name.replace(/\s/g, "")} ${col.type}`;
+	const formatted = `${col.name.replace(/\s/g, '')} ${col.type}`;
 
-  if (checkPrimaryKey(col.name)) {
-    primaryKeyIndex.push(index);
-  }
+	if (checkPrimaryKey(col.name)) {
+		primaryKeyIndex.push(index);
+	}
 
-  return formatted;
+	return formatted;
 }
 
 export function checkPrimaryKey(col: string): boolean {
-  const primaryKeyIndicator = "_pk";
+	const primaryKeyIndicator = '_pk';
 
-  if (
-    col.substring(col.length, col.length - 3).toUpperCase() ===
+	if (
+		col.substring(col.length, col.length - 3).toUpperCase() ===
     primaryKeyIndicator.toUpperCase()
-  ) {
-    return true;
-  }
+	) {
+		return true;
+	}
 
-  return false;
+	return false;
 }
 
 export function formatPrimaryKey(
-  formatColumnsResult: FormatColumnsResult
+	formatColumnsResult: FormatColumnsResult
 ): string[] {
-  if (formatColumnsResult.primaryKeyIndex.length < 1) {
-    return formatColumnsResult.formattedColumns;
-  }
+	if (formatColumnsResult.primaryKeyIndex.length < 1) {
+		return formatColumnsResult.formattedColumns;
+	}
 
-  if (formatColumnsResult.primaryKeyIndex.length === 1) {
-    const primaryColumn = formatColumnsResult.formattedColumns[
-      formatColumnsResult.primaryKeyIndex[0]
-    ].concat(` ${SQLKeyword.PRIMARY_KEY}`);
+	if (formatColumnsResult.primaryKeyIndex.length === 1) {
+		const primaryColumn = formatColumnsResult.formattedColumns[
+			formatColumnsResult.primaryKeyIndex[0]
+		].concat(` ${SQLKeyword.PRIMARY_KEY}`);
 
-    formatColumnsResult.formattedColumns[
-      formatColumnsResult.primaryKeyIndex[0]
-    ] = primaryColumn;
+		formatColumnsResult.formattedColumns[
+			formatColumnsResult.primaryKeyIndex[0]
+		] = primaryColumn;
 
-    return formatColumnsResult.formattedColumns;
-  }
+		return formatColumnsResult.formattedColumns;
+	}
 
-  const primaryKeys: string[] = [];
+	const primaryKeys: string[] = [];
 
-  formatColumnsResult.primaryKeyIndex.forEach((index) => {
-    primaryKeys.push(
-      formatColumnsResult.formattedColumns[index].substring(
-        0,
-        formatColumnsResult.formattedColumns[index].indexOf(" ")
-      )
-    );
-  });
+	formatColumnsResult.primaryKeyIndex.forEach((index) => {
+		primaryKeys.push(
+			formatColumnsResult.formattedColumns[index].substring(
+				0,
+				formatColumnsResult.formattedColumns[index].indexOf(' ')
+			)
+		);
+	});
 
-  const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
+	const primaryColumns = `${SQLKeyword.PRIMARY_KEY} (${primaryKeys})`;
 
-  formatColumnsResult.formattedColumns.push(primaryColumns);
+	formatColumnsResult.formattedColumns.push(primaryColumns);
 
-  return formatColumnsResult.formattedColumns;
+	return formatColumnsResult.formattedColumns;
 }
 
 export function generatePrimaryKey(
-  formatColumnsResult: FormatColumnsResult
+	formatColumnsResult: FormatColumnsResult
 ): string[] {
-  const primaryColumn = `id ${SQLKeyword.SERIAL} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY}`;
+	const primaryColumn = `id ${SQLKeyword.SERIAL} ${SQLKeyword.NOT_NULL} ${SQLKeyword.PRIMARY_KEY}`;
 
-  formatColumnsResult.formattedColumns.push(primaryColumn);
+	formatColumnsResult.formattedColumns.push(primaryColumn);
 
-  return formatColumnsResult.formattedColumns;
+	return formatColumnsResult.formattedColumns;
 }
