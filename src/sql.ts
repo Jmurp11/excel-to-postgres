@@ -144,10 +144,10 @@ export async function excelToPostgresDb(
   connectionInfo: Connection,
   filePath: string,
   options?: Options
-): Promise<void> {
+): Promise<string> {
   try {
     if (options?.generatePrimaryKey && options?.useExistingPrimaryKeys) {
-      return console.error(
+      throw new Error(
         "Cannot generate primary keys column and also use existing primary keys"
       );
     }
@@ -165,16 +165,22 @@ export async function excelToPostgresDb(
     });
 
     if (options && options.createDatabase) {
-      executeQueryWithCreateDB(connectionInfo, tableQuery, insertQuery);
+      await executeQueryWithCreateDB(connectionInfo, tableQuery, insertQuery);
     } else if (options && !options.createDatabase && options.createTables) {
-      executeQueryWithCreateTable(connectionInfo, tableQuery, insertQuery);
+      await executeQueryWithCreateTable(
+        connectionInfo,
+        tableQuery,
+        insertQuery
+      );
     } else if (!options.createDatabase && !options.createTables) {
       await executeQuery(connectionInfo, insertQuery);
     } else {
       console.log("No changes made...");
     }
+
+    return `Excel was successfully imported to Postgres database!`;
   } catch (err) {
-    console.error(err);
+    return `EXCEL-TO-POSTGRES ERROR: ${err}`;
   }
 }
 
