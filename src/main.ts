@@ -6,10 +6,11 @@ excelToPostgresDb(
 		user: 'postgres',
 		password: 'postgres',
 		port: 5432,
-		database: 'baseballdb',
+		database: 'test',
 	},
-	'/Users/jim.murphy/Documents/workspace/multi-sport-draft-aid/server/data/baseballdb.xlsx',
+	'/Users/jim/Documents/workspace/multi-sport-draft-aid/server/data/baseball.xlsx',
 	{
+		createDatabase: true,
 		createTables: true,
 	}
 ).then((t) => console.log(t));

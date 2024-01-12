@@ -11,31 +11,31 @@ import {
 import { readExcel } from './excel';
 
 export enum PrimaryKeyOptions {
-  GENERATE = 'GENERATE',
-  USE_EXISTING = 'USE EXISTING',
-  NO_PRIMARY_KEY = 'NO PRIMARY KEY',
+	GENERATE = 'GENERATE',
+	USE_EXISTING = 'USE EXISTING',
+	NO_PRIMARY_KEY = 'NO PRIMARY KEY',
 }
 
 export interface Connection {
-  user: string;
-  host: string;
-  database: string;
-  password: string;
-  port: number;
+	user: string;
+	host: string;
+	database: string;
+	password: string;
+	port: number;
 }
 
 export interface Options {
-  createDatabase?: boolean;
-  createTables?: boolean;
-  generatePrimaryKey?: boolean;
-  useExistingPrimaryKeys?: boolean;
+	createDatabase?: boolean;
+	createTables?: boolean;
+	generatePrimaryKey?: boolean;
+	useExistingPrimaryKeys?: boolean;
 }
 
 export function createDatabase(dbName: string): string {
 	try {
 		return `CREATE DATABASE ${dbName};`;
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -57,7 +57,15 @@ export function createTable<T>(
         ${formattedColumns}
     );`;
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
+	}
+}
+
+export function dropTable(tableName: string) {
+	try {
+		return `DROP TABLE ${tableName.replace(/\s/g, '')};`;
+	} catch (err) {
+		throw new Error(err);
 	}
 }
 
@@ -76,7 +84,7 @@ export function checkPrimaryKeyOptions(
 			return;
 		}
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -94,7 +102,7 @@ export function insert<T>(table: string, data: T[]): string {
 			const fieldValues = [];
 			values.forEach((value) => {
 				if (typeof value === 'string') {
-					fieldValues.push(`'${value.replace(/'/g, '\'\'')}'`);
+					fieldValues.push(`'${value.replace(/'/g, "''")}'`);
 				} else {
 					fieldValues.push(`${value}`);
 				}
@@ -110,7 +118,7 @@ export function insert<T>(table: string, data: T[]): string {
 
 		return insertQuery;
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -120,7 +128,7 @@ async function executeQuery(connectionInfo: Connection, query: string) {
 	try {
 		await pool.query(query);
 	} catch (err) {
-		return console.log(err);
+		throw new Error(err);
 	}
 
 	await pool.end();
@@ -136,7 +144,7 @@ export function handlePrimaryKey(options: Options): string {
 			return PrimaryKeyOptions.NO_PRIMARY_KEY;
 		}
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -156,17 +164,28 @@ export async function excelToPostgresDb(
 
 		let insertQuery = '';
 		let tableQuery = '';
+		let dropTableQuery = '';
 
 		sheets.forEach(async (sheet) => {
+			dropTableQuery = dropTableQuery.concat(dropTable(sheet.title));
 			tableQuery = tableQuery.concat(
-				createTable(sheet.title, sheet.data[0], handlePrimaryKey(options))
+				createTable(
+					sheet.title,
+					sheet.data[0],
+					handlePrimaryKey(options)
+				)
 			);
 			insertQuery = insertQuery.concat(insert(sheet.title, sheet.data));
 		});
 
 		if (options && options.createDatabase) {
-			await executeQueryWithCreateDB(connectionInfo, tableQuery, insertQuery);
+			await executeQueryWithCreateDB(
+				connectionInfo,
+				tableQuery,
+				insertQuery
+			);
 		} else if (options && !options.createDatabase && options.createTables) {
+			await executeQuery(connectionInfo, dropTableQuery);
 			await executeQueryWithCreateTable(
 				connectionInfo,
 				tableQuery,
@@ -178,9 +197,9 @@ export async function excelToPostgresDb(
 			console.log('No changes made...');
 		}
 
-		return 'Excel was successfully imported to Postgres database!';
+		return 'SUCCESS: Excel was successfully imported to Postgres database!';
 	} catch (err) {
-		return `EXCEL-TO-POSTGRES ERROR: ${err}`;
+		throw new Error(err);
 	}
 }
 
@@ -192,11 +211,14 @@ async function executeQueryWithCreateDB(
 	try {
 		const initialConnect = { ...connectionInfo, database: null };
 
-		await executeQuery(initialConnect, createDatabase(connectionInfo.database));
+		await executeQuery(
+			initialConnect,
+			createDatabase(connectionInfo.database)
+		);
 		await executeQuery(connectionInfo, tableQuery);
 		await executeQuery(connectionInfo, insertQuery);
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -209,6 +231,6 @@ async function executeQueryWithCreateTable(
 		await executeQuery(connectionInfo, tableQuery);
 		await executeQuery(connectionInfo, insertQuery);
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }

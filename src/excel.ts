@@ -1,8 +1,8 @@
 import * as XLSX from 'xlsx';
 
 interface Worksheet<T> {
-  title: string;
-  data: T[];
+	title: string;
+	data: T[];
 }
 
 export function readExcel<T>(file: string): Worksheet<T>[] {
@@ -10,7 +10,7 @@ export function readExcel<T>(file: string): Worksheet<T>[] {
 		const workbook = XLSX.readFile(file);
 		return getWorkSheets(workbook);
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
 
@@ -23,6 +23,6 @@ function getWorkSheets<T>(workbook: XLSX.WorkBook): Worksheet<T>[] {
 			}),
 		}));
 	} catch (err) {
-		console.error(err);
+		throw new Error(err);
 	}
 }
