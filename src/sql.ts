@@ -27,6 +27,7 @@ export interface Connection {
 export interface Options {
 	createDatabase?: boolean;
 	createTables?: boolean;
+	dropTables?: boolean;
 	generatePrimaryKey?: boolean;
 	useExistingPrimaryKeys?: boolean;
 }
@@ -63,7 +64,7 @@ export function createTable<T>(
 
 export function dropTable(tableName: string) {
 	try {
-		return `DROP TABLE ${tableName.replace(/\s/g, '')};`;
+		return `DROP TABLE IF EXISTS ${tableName.replace(/\s/g, '')};`;
 	} catch (err) {
 		throw new Error(err);
 	}
@@ -185,11 +186,12 @@ export async function excelToPostgresDb(
 				insertQuery
 			);
 		} else if (options && !options.createDatabase && options.createTables) {
-			await executeQuery(connectionInfo, dropTableQuery);
 			await executeQueryWithCreateTable(
 				connectionInfo,
+				options,
 				tableQuery,
-				insertQuery
+				insertQuery,
+				dropTableQuery
 			);
 		} else if (!options.createDatabase && !options.createTables) {
 			await executeQuery(connectionInfo, insertQuery);
@@ -224,10 +226,15 @@ async function executeQueryWithCreateDB(
 
 async function executeQueryWithCreateTable(
 	connectionInfo: Connection,
+	options: Options,
 	tableQuery: string,
-	insertQuery: string
+	insertQuery: string,
+	dropTableQuery: string
 ) {
 	try {
+		if (options.dropTables) {
+			await executeQuery(connectionInfo, dropTableQuery);
+		}
 		await executeQuery(connectionInfo, tableQuery);
 		await executeQuery(connectionInfo, insertQuery);
 	} catch (err) {
