@@ -1,4 +1,5 @@
 # excel-to-postgres
+
 Quickly export an Excel Workbook to a Postgres DB
 
 # Installation
@@ -32,12 +33,14 @@ excelToPostgresDb({
 
 Supports four options, all of which are optional:
 
-* *createDatabase* - _true | false_ (Defaults to false)
-* *createTables* - _true | false_ (Defaults to false)
-* *generatePrimaryKey* - _true | false_ (Defaults to false.  Generates 'id' column to be used as a primary key.  Cannot be used with 'useExistingPrimaryKeys' option)
-* *useExistingPrimaryKeys* - _true | false_ (Defaults to false.  Supports multiple primary keys.  Append '_pk' to the column name in the workbook that will be the primary key.  Cannot be used with 'generatePrimaryKey' option)
+-   _createDatabase_ - _true | false_ (Defaults to false)
+-   _createTables_ - _true | false_ (Defaults to false)
+-   _dropTables_ - _true | false_ (Defaults to false. When creating table, drop the table if it already exists)
+-   _generatePrimaryKey_ - _true | false_ (Defaults to false. Generates 'id' column to be used as a primary key. Cannot be used with 'useExistingPrimaryKeys' option)
+-   _useExistingPrimaryKeys_ - _true | false_ (Defaults to false. Supports multiple primary keys. Append '\_pk' to the column name in the workbook that will be the primary key. Cannot be used with 'generatePrimaryKey' option)
+
 # Testing
 
-This package's tests are written using [Jest](https://jestjs.io/).  To execute, run:
+This package's tests are written using [Jest](https://jestjs.io/). To execute, run:
 
 `npm test`

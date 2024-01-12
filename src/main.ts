@@ -1,1 +1,1 @@
-export { excelToPostgresDb } from "./sql";
+export { excelToPostgresDb } from './sql';

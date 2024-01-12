@@ -1,28 +1,28 @@
 export enum SQLType {
-  VARCHAR = 'VARCHAR',
-  BOOLEAN = 'BOOLEAN',
-  FLOAT = 'FLOAT',
-  INT = 'INT',
+	VARCHAR = 'VARCHAR',
+	BOOLEAN = 'BOOLEAN',
+	FLOAT = 'FLOAT',
+	INT = 'INT',
 }
 
 export enum SQLKeyword {
-  PRIMARY_KEY = 'PRIMARY KEY',
-  NOT_NULL = 'NOT NULL',
-  SERIAL = 'SERIAL',
+	PRIMARY_KEY = 'PRIMARY KEY',
+	NOT_NULL = 'NOT NULL',
+	SERIAL = 'SERIAL',
 }
 export interface Column {
-  name: string;
-  type: string;
+	name: string;
+	type: string;
 }
 
 export interface Fields<T> {
-  names: string[];
-  values: T[];
+	names: string[];
+	values: T[];
 }
 
 interface FormatColumnsResult {
-  formattedColumns: string[];
-  primaryKeyIndex: number[];
+	formattedColumns: string[];
+	primaryKeyIndex: number[];
 }
 
 export function getFields<T>(data: T): Fields<T> {
@@ -35,23 +35,23 @@ export function getFields<T>(data: T): Fields<T> {
 export function getColumns<T>(fields: Fields<T>): Column[] {
 	return fields.values.map((value: T, index: number) => {
 		switch (typeof value) {
-		case 'string':
-			return {
-				name: fields.names[index],
-				type: SQLType.VARCHAR,
-			};
-		case 'number':
-			return {
-				name: fields.names[index],
-				type: SQLType.FLOAT,
-			};
-		case 'boolean':
-			return {
-				name: fields.names[index],
-				type: SQLType.BOOLEAN,
-			};
-		default:
-			break;
+			case 'string':
+				return {
+					name: fields.names[index],
+					type: SQLType.VARCHAR,
+				};
+			case 'number':
+				return {
+					name: fields.names[index],
+					type: SQLType.FLOAT,
+				};
+			case 'boolean':
+				return {
+					name: fields.names[index],
+					type: SQLType.BOOLEAN,
+				};
+			default:
+				break;
 		}
 	});
 }
@@ -59,8 +59,9 @@ export function getColumns<T>(fields: Fields<T>): Column[] {
 export function formatColumns(columns: Column[]): FormatColumnsResult {
 	const primaryKeyIndex: number[] = [];
 
-	const formattedColumns: string[] = columns.map((col: Column, index: number) =>
-		formatColumn(col, primaryKeyIndex, index)
+	const formattedColumns: string[] = columns.map(
+		(col: Column, index: number) =>
+			formatColumn(col, primaryKeyIndex, index)
 	);
 
 	return { formattedColumns, primaryKeyIndex: primaryKeyIndex };
@@ -85,7 +86,7 @@ export function checkPrimaryKey(col: string): boolean {
 
 	if (
 		col.substring(col.length, col.length - 3).toUpperCase() ===
-    primaryKeyIndicator.toUpperCase()
+		primaryKeyIndicator.toUpperCase()
 	) {
 		return true;
 	}
